@@ -52,7 +52,6 @@ def get_paper(paper_info):
                             #     print(f"{paper_url}: {percent:.1f}%", end="\r")
 
                 logging.info(f"Downloaded paper: {paper_name}")
-
         except Exception as e:
             logging.critical("An error has occured when downloading paper from hf")
             raise
@@ -117,6 +116,77 @@ def get_embeddings(text, method: Literal["hf", "local"] = "hf"):
         raise
 
 
+def groq(text):
+    from openai import OpenAI
+
+    client = OpenAI(
+        api_key=os.environ.get("GROQ_API_KEY"),
+        base_url="https://api.groq.com/openai/v1",
+    )
+
+    chat_completion = client.chat.completions.create(
+        messages=[
+            {
+                "role": "system",
+                "content": """ 
+You are an expert AI researcher. The user will provide a technical problem or question. 
+Your task is to write a hypothetical scientific abstract for a research paper that perfectly solves the user's problem.
+
+CRITICAL RULES:
+1. Do NOT invent highly specific, fake acronyms (e.g., do not invent "Deferred Image Loading (DIL)"). Use broad, standard academic terminology instead (e.g., "on-demand loading mechanisms").
+2. Contextualize the problem. If the user asks about a bot looking at webpages, assume the paper is about "Autonomous Agents", "Multimodal Search", or "Web Navigation" and include those terms.
+3. Write exactly one paragraph. Do not include a title.
+                """,
+            },
+            {
+                "role": "user",
+                "content": f"""Write a short abstract for an AI/ML research paper that would directly answer this search query.
+
+                Query: {text}
+
+                Abstract:""",
+            },
+        ],
+        model="llama-3.3-70b-versatile",
+        max_completion_tokens=500,
+        # extra_body={"include_reasoning": False},
+    )
+
+    # print(chat_completion.choices[0].message.content)
+
+    return chat_completion.choices[0].message.content
+
+
+def testing():
+    while True:
+        print("-" * 50)
+        query: str = input("Type your query: ")
+        if query == "/exit":
+            break
+
+        query_llm = groq(query)
+        print(query_llm)
+        query_embedding = get_embeddings(query_llm, method=embedding_method)
+
+        try:
+            response = supabase.rpc(
+                "match_documents",
+                {
+                    "query_embedding": query_embedding,
+                    "match_threshold": 0.2,
+                    "match_count": 5,
+                },
+            ).execute()
+
+            for row in response.data:
+                row.pop("embedding", None)
+            pprint(response.data)
+
+        except Exception as e:
+            logging.critical("An error occurred during semantic search")
+            raise
+
+
 def main():
     output_path = "./papers_fetch.json"
     if not os.path.isfile(output_path):
@@ -175,69 +245,6 @@ def main():
         logging.info("No new papers to upsert")
 
 
-def groq(text):
-    from openai import OpenAI
-
-    client = OpenAI(
-        api_key=os.environ.get("GROQ_API_KEY"),
-        base_url="https://api.groq.com/openai/v1",
-    )
-
-    chat_completion = client.chat.completions.create(
-        messages=[
-            {
-                "role": "system",
-                "content": "You are a research assistant specialized in AI and machine learning. You help users find relevant ML/AI research papers.",
-            },
-            {
-                "role": "user",
-                "content": f"""Write a short abstract for an AI/ML research paper that would directly answer this search query.
-
-                Query: {text}
-
-                Abstract:""",
-            },
-        ],
-        model="llama-3.3-70b-versatile",
-        max_completion_tokens=500,
-        # extra_body={"include_reasoning": False},
-    )
-
-    # print(chat_completion.choices[0].message.content)
-
-    return chat_completion.choices[0].message.content
-
-
-def testing():
-    while True:
-        print("-" * 50)
-        query: str = input("Type your query: ")
-        if query == "/exit":
-            break
-
-        query_llm = groq(query)
-        print(query_llm)
-        query_embedding = get_embeddings(query_llm, method=embedding_method)
-
-        try:
-            response = supabase.rpc(
-                "match_documents",
-                {
-                    "query_embedding": query_embedding,
-                    "match_threshold": 0.2,
-                    "match_count": 3,
-                },
-            ).execute()
-
-            for row in response.data:
-                row.pop("embedding", None)
-            pprint(response.data)
-
-        except Exception as e:
-            logging.critical("An error occurred during semantic search")
-            raise
-
-
 if __name__ == "__main__":
     main()
-    testing()
+    # testing()

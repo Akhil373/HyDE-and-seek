@@ -1,13 +1,11 @@
 test_queries = (
     # --- LEVEL 1: Exact / Keyword Queries (Easy) ---
-    # Tests if the pipeline can handle direct vocabulary overlap
     ("SCOPE: Signal-Calibrated On-Policy Distillation Enhancement", "2604.10688"),
     ("BMdataset LilyPond symbolic music", "2604.10628"),
     ("EquiformerV3 SE(3)-equivariant graph attention", "2604.09130"),
     ("DiningBench multi-view food dataset", "2604.10425"),
     ("CodeTracer architecture for agent states", "2604.11641"),
     # --- LEVEL 2: Conversational / Problem-Solution Queries (Medium) ---
-    # Tests how well the embeddings map a user's "problem" to the paper's "solution"
     (
         "My LLM agent keeps forgetting who it is and mimics the user over long chats. How do I fix this?",
         "2604.09212",
@@ -33,7 +31,6 @@ test_queries = (
         "2604.11201",
     ),  # CocoaBench
     # --- LEVEL 3: Vague / Conceptual Queries (Hard) ---
-    # Tests true semantic mapping without relying on the paper's specific jargon
     (
         "Using video game physics engines to teach AI how to solve science Olympiad problems.",
         "2604.11805",
@@ -59,7 +56,6 @@ test_queries = (
         "2604.02372",
     ),  # Backdoor Attacks on Decentralised Post-Training
     # --- LEVEL 4: Highly Specific Niche & Cross-Disciplinary (Stress Tests) ---
-    # Tests if the pipeline can pull up dense, specialized topics from a crowded vector space
     (
         "Applying Peircean semiotic theory to evaluate human-AI interaction in generative art.",
         "2604.08641",
