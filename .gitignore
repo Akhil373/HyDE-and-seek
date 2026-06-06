@@ -12,5 +12,6 @@ wheels/
 .env
 
 # other
-*.json
 papers/
+papers_fetch*
+data/
