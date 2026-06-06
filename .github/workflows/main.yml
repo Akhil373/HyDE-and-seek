@@ -20,7 +20,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install supabase python-dotenv requests
 
-      - run: python scripts/fetch_papers.py
+      - run: python scripts/fetch_paper.py
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
