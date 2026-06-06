@@ -19,6 +19,8 @@ logging.getLogger("httpcore").setLevel(logging.WARNING)
 
 url = os.environ.get("SUPABASE_URL")
 key = os.environ.get("SUPABASE_PUBLISHABLE_KEY")
+print("URL:", bool(url))
+print("KEY:", bool(key))
 if not url or not key:
     logging.critical("Supabase credentials not found!")
     raise ValueError()
