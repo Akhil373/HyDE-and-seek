@@ -1,7 +1,6 @@
-import json
 import logging
 import os
-from datetime import date
+import datetime
 from typing import Literal
 from typing import TypedDict
 from concurrent.futures import ThreadPoolExecutor
@@ -145,19 +144,9 @@ def process_paper(paper):
 
 
 def main():
-    t = date.today()
-    d, m = f"{t.day:02d}", f"{t.month:02d}"
-
-    output_path = f"./data/papers_fetch_{m}_{d}.json"
-    if not os.path.isfile(output_path):
-        response = requests.get("https://huggingface.co/api/daily_papers", timeout=15)
-        response.raise_for_status()
-        data = response.json()
-    else:
-        logging.info("papers metadata already exists!")
-        with open(output_path, "r", encoding="utf-8") as f:
-            response = json.load(f)
-        data = response
+    response = requests.get("https://huggingface.co/api/daily_papers", timeout=15)
+    response.raise_for_status()
+    data = response.json()
 
     incoming_ids = [item["paper"]["id"] for item in data]
 
@@ -174,18 +163,16 @@ def main():
     with ThreadPoolExecutor(max_workers=3) as executor:
         papers = list(executor.map(process_paper, new_papers))
 
-    try:
-        with open(output_path, "w", encoding="utf-8") as f:
-            json.dump(data, f, indent=4, ensure_ascii=False)
-        print(f"written into {output_path}; size: {len(data)}")
-
-    except Exception:
-        logging.error("An error has occured when writing into %s", output_path)
-        raise
-
     if papers:
         supabase.table("all_papers_db").upsert(papers).execute()
         logging.info("Upserted %s new papers to db", len(papers))
+        logging.info(
+            "Run date=%s, found=%d existing=%d new=%d",
+            datetime.utcnow().date(),
+            len(incoming_ids),
+            len(existing_ids),
+            len(new_papers),
+        )
     else:
         logging.info("No new papers to upsert")
 
