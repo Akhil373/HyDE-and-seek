@@ -1,7 +1,7 @@
 from openai import api_key
 import logging
 import os
-import datetime
+from datetime import datetime
 from typing import Literal
 from typing import TypedDict
 from concurrent.futures import ThreadPoolExecutor
@@ -71,7 +71,7 @@ def get_embeddings(
     )
     payload = {"inputs": formatted_text}
 
-    print("HF token found:", bool(os.environ.get('HF_TOKEN')))
+    # print("HF token found:", bool(os.environ.get('HF_TOKEN')))
 
     headers = {
         "Authorization": f"Bearer {os.environ.get('HF_TOKEN')}",
@@ -96,7 +96,7 @@ def groq(text):
         api_key=os.environ.get("GROQ_API_KEY"),
         base_url="https://api.groq.com/openai/v1",
     )
-    print("Groq api key found:", bool(os.environ.get("GROQ_API_KEY")))
+    # print("Groq api key found:", bool(os.environ.get("GROQ_API_KEY")))
 
 
     chat_completion = client.chat.completions.create(
