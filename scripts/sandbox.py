@@ -1,6 +1,7 @@
+import datetime
 import os
-from pprint import pprint
 
+# from pprint import pprint
 import requests
 from dotenv import load_dotenv
 from openai import OpenAI
@@ -65,7 +66,7 @@ def groq():
         base_url="https://api.groq.com/openai/v1",
     )
 
-    input = f"""Write a short abstract for a research paper that would directly answer the following search query.
+    input = """Write a short abstract for a research paper that would directly answer the following search query.
     Claim: Are there any benchmarks that test if LLMs can actually predict real-world chemistry and biology experiments?
     Passage:"""
 
@@ -85,7 +86,10 @@ def main():
 
     # print(output)
     # openrouter()
-    groq()
+    # groq()
+    t = datetime.date.today()
+    d, m = f"{t.day:02d}", f"{t.month:02d}"
+    print(d, m)
 
 
 main()
